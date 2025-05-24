@@ -1,0 +1,94 @@
+import React, { useEffect, useState } from 'react';
+import AppNavbar from './components/AppNavbar';
+import LandingPage from './pages/LandingPage';
+import { Route, Routes } from 'react-router-dom';
+import Login from './pages/login/LoginPage';
+import PondsData from './pages/ponds/PondsData';
+import PageWithNavbarFooter from './components/PageWithNavbarFooter';
+import ScrollToTop from './components/ScrollToTop';
+import { GlobalProvider } from './contexts/GlobalContext';
+import axios from 'axios';
+import { useQuery } from '@tanstack/react-query';
+
+interface User{
+  id: number,
+  name: string,
+  email: string,
+  age: number,
+  city: string
+}
+
+const App: React.FC = () => {
+
+
+  const fetchUserData = async()=>{
+    try{
+      const response = await axios.get('http://localhost:8081/users')
+      return response.data
+    }catch(err){
+      console.log('error', err)
+    }
+  }
+
+  const {data:users, isLoading, isError} = useQuery<User[]>({
+    queryKey: ["users"],
+    queryFn: fetchUserData
+  })
+
+  if(isLoading){
+    return <h3>data is loading</h3>
+  }
+
+  if(isError){
+    return <p>error fetching users</p>
+  }
+
+  return (
+    <>
+    <table border={1}>
+      <thead>
+        <tr>
+        <th>ID</th>
+        <th>name</th>
+        <th>email</th>
+        <th>age</th>
+        <th>city</th>
+        </tr>
+      </thead>
+      <tbody>
+        {users?.map((data, index)=>(
+          <tr key={index}>
+            <td>{data.id}</td>
+            <td>{data.name}</td>
+            <td>{data.email}</td>
+            <td>{data.age}</td>
+            <td>{data.city}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+     {/* <ScrollToTop />
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route
+          path="/ponddata"
+          element={
+            <GlobalProvider>
+              <PageWithNavbarFooter component={PondsData} />
+            </GlobalProvider>
+          }
+        />
+        <Route
+          path="/landing"
+          element={
+            <GlobalProvider>
+              <PageWithNavbarFooter component={LandingPage} />
+            </GlobalProvider>
+          }
+        />}
+      </Routes>*/}
+    </>
+  );
+};
+
+export default App;
